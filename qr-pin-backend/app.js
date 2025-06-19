@@ -15,10 +15,6 @@ app.use(cors());
 // Route registration
 app.use("/api/auth-methods", authMethodRoutes);
 app.use("/api/qr", qrRoutes);
-
-
-// Add more route groups here as you build: 
-// app.use("/api/qr", qrRoutes);
 // app.use("/api/pin", pinRoutes);
 
 module.exports = app;
