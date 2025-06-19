@@ -1,7 +1,8 @@
 export const fetchAuthMethods = async (userId, token) => {
   try {
-    const response = await fetch(
-      `http://localhost:3001/api/auth-methods/${userId}`,
+    const response = await fetch(      
+      //`http://localhost:3001/api/auth-methods/${userId}`,
+      `http://localhost:3001/api/auth-methods/${userId}/methods`,
       {
         method: "GET",
         headers: {
@@ -22,10 +23,11 @@ export const fetchAuthMethods = async (userId, token) => {
   }
 };
 
-export const fetchQrDetails = async (userEmail, token) => {
+export const fetchQrDetails = async (upn, token) => {
   try {
     const response = await fetch(
-      `http://localhost:3001/api/all-qr-data/${userEmail}`,
+      //`http://localhost:3001/api/all-qr-data/${upn}`,
+       `http://localhost:3001/api/qr/user-all/${upn}`,
       {
         method: "GET",
         headers: {
@@ -49,7 +51,8 @@ export const fetchQrDetails = async (userEmail, token) => {
 export const deletePermanentQRCode = async (userId, token) => {
   try {
     const response = await fetch(
-      `http://localhost:3001/api/delete-qr-pin-mfa/${userId}`,
+      //`http://localhost:3001/api/delete-qr-pin-mfa/${userId}`,
+      `http://localhost:3001/api/auth-methods/${userId}`,
       {
         method: "DELETE",
         headers: {
@@ -73,7 +76,7 @@ export const deletePermanentQRCode = async (userId, token) => {
 export const createStandardQrCode = async (userInfo, token) => {
   try {
     const response = await fetch(
-      "http://localhost:3001/api/create-qr-pin-mfa",
+      "http://localhost:3001/api/auth-methods/create",
       {
         method: "PUT",
         headers: {
@@ -97,20 +100,15 @@ export const createStandardQrCode = async (userInfo, token) => {
 
 export const createTempQRCode = async (userId, token) => {
   try {
-    const now = new Date();
-    const expireDateTime = new Date(now.getTime() + 0.1 * 60 * 60 * 1000); // 6 minutes
     const response = await fetch(
-      `https://graph.microsoft.com/beta/users/${userId}/authentication/qrCodePinMethod/temporaryQRCode`,
+      "http://localhost:3001/api/qr/temp",
       {
-        method: "PATCH",
+        method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          startDateTime: now.toISOString(),
-          expireDateTime: expireDateTime.toISOString(),
-        }),
+        body: JSON.stringify({ userId }),
       }
     );
 
@@ -121,13 +119,37 @@ export const createTempQRCode = async (userId, token) => {
     }
 
     const data = await response.json();
-    console.log(data);
     return {
-      qrCodeSrc: `data:image/svg+xml;base64,${data.image.binaryValue}`,
-      pin: 12345678
+      qrCodeSrc: `data:image/svg+xml;base64,${data.qrCode}`,
+      pin: data.pin, // or placeholder if not provided
     };
   } catch (error) {
     console.error("Error creating temporary QR code:", error);
+    throw error;
+  }
+};
+
+export const resetAuthMethod = async (userInfo, token) => {
+  try {
+    const response = await fetch(
+      "http://localhost:3001/api/auth-methods/reset-auth-method",
+      {
+        method: "POST", 
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(userInfo),
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(`Failed to reset auth method: ${response.statusText}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("Error resetting auth method:", error);
     throw error;
   }
 };

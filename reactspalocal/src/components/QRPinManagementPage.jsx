@@ -10,6 +10,7 @@ import {
   deletePermanentQRCode,
   createStandardQrCode,
   fetchAuthMethods,
+  resetAuthMethod,
 } from "../services/apiService";
 
 const QRPinManagementPage = ({ activeAccount }) => {
@@ -168,21 +169,27 @@ const QRPinManagementPage = ({ activeAccount }) => {
     // logic to be continued
   };
 
+  const handleResetAuthMethod = async () => {
+  try {
+    const userInfo = {
+      userId,
+      displayName: activeAccount?.name || "Unknown User",
+    };
+
+    const data = await resetAuthMethod(userInfo, token);
+    console.log("Reset Auth Method Response:", data);
+  } catch (error) {
+    console.error("Error resetting auth method:", error);
+  }
+};
+
+
   return (
     <>
       <NavigationBar />
       {qrPinData && (qrPinData.standardQrId || qrPinData.tempQrId) ? (
         <>
-          {/* Permanently Delete QR Code + PIN */}
-          <CustomCard
-            title="Delete Current QR and PIN"
-            text="Deletes QR Code and PIN"
-            buttonText="Delete QR and PIN →"
-            buttonAction={handleDeleteQrCode}
-            isExternal={false}
-          />
-          {asyncStatus.success && <p>QR code deleted successfully!</p>}
-          {asyncStatus.error && <p>Error: {asyncStatus.error}</p>}
+          
           {/* Extend existing QR code */}
           <CustomCard
             title="Standard QR Code"
@@ -199,6 +206,14 @@ const QRPinManagementPage = ({ activeAccount }) => {
             buttonAction={extendCurrentQR}
             isExternal={false}
           />
+          {/* Reset PIN and QR */}
+          <CustomCard
+            title="Reset PIN and QR Code"
+            text="RESET"
+            buttonText="Reset →"
+            buttonAction={handleResetAuthMethod}
+            isExternal={false}
+          />
           {/* Create temporary QR */}
           <CustomCard
             title="Create temporary QR + PIN"
@@ -213,6 +228,16 @@ const QRPinManagementPage = ({ activeAccount }) => {
               onCloseCallback={() => setShowFlow(false)}
             />
           )}
+          {/* Permanently Delete QR Code + PIN */}
+          <CustomCard
+            title="Delete Current QR and PIN"
+            text="Deletes QR Code and PIN"
+            buttonText="Delete QR and PIN →"
+            buttonAction={handleDeleteQrCode}
+            isExternal={false}
+          />
+          {asyncStatus.success && <p>QR code deleted successfully!</p>}
+          {asyncStatus.error && <p>Error: {asyncStatus.error}</p>}
         </>
       ) : (
         /* Create a new QR and PIN */
